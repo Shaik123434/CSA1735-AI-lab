@@ -1,0 +1,75 @@
+from collections import deque
+
+# Define the goal state
+goal_state = [[1, 2, 3],
+              [4, 5, 6],
+              [7, 8, 0]]
+
+# Directions for moving the blank tile (up, down, left, right)
+directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+# Function to find the position of the blank tile
+def find_blank(state):
+    for i in range(len(state)):
+        for j in range(len(state[i])):
+            if state[i][j] == 0:
+                return i, j
+    return None, None
+
+# Function to check if the state is the goal state
+def is_goal(state):
+    return state == goal_state
+
+# Function to get the next states by moving the blank tile
+def get_next_states(state):
+    blank_i, blank_j = find_blank(state)
+    next_states = []
+    
+    for direction in directions:
+        new_i, new_j = blank_i + direction[0], blank_j + direction[1]
+        if 0 <= new_i < len(state) and 0 <= new_j < len(state[0]):
+            new_state = [row[:] for row in state]
+            new_state[blank_i][blank_j], new_state[new_i][new_j] = new_state[new_i][new_j], new_state[blank_i][blank_j]
+            next_states.append(new_state)
+    
+    return next_states
+
+# Function to solve the 8-puzzle using BFS
+def bfs_solve(start_state):
+    queue = deque([(start_state, [])])
+    visited = set()
+    visited.add(tuple(map(tuple, start_state)))
+    
+    while queue:
+        current_state, path = queue.popleft()
+        
+        if is_goal(current_state):
+            return path + [current_state]
+        
+        for next_state in get_next_states(current_state):
+            state_tuple = tuple(map(tuple, next_state))
+            if state_tuple not in visited:
+                visited.add(state_tuple)
+                queue.append((next_state, path + [current_state]))
+    
+    return None
+
+# Function to print the steps
+def print_steps(steps):
+    for step in steps:
+        for row in step:
+            print(row)
+        print()
+
+# Example usage
+start_state = [[1, 2, 3],
+               [4, 0, 6],
+               [7, 5, 8]]
+
+steps = bfs_solve(start_state)
+
+if steps:
+    print("Solution found in {} steps:".format(len(steps) - 1))
+    print_steps(steps)
+else:
+    print("No solution found.")
